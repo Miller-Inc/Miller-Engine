@@ -10,6 +10,8 @@
 #include <set>
 #include <thread>
 #include <utility>
+#include <vector>
+#include "FileObject.h"
 
 namespace MillerGui {
 
@@ -31,6 +33,8 @@ public:
 
     ~FileManager();
 
+    [[nodiscard]] FileObject GetFileLayout() const;
+
 private:
 
     std::thread* thread;
@@ -43,7 +47,13 @@ private:
 
     std::set<std::filesystem::path> files;
 
+    std::set<FileObject> filesObjs; // Files in the directory
+
+    FileObject fileLayout;
+
     void getFiles();
+
+    static FileObject getFileObject(std::filesystem::path p);
 
 };
 

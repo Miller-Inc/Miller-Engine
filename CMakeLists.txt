@@ -52,6 +52,9 @@ add_executable(Miller_GUI main.cpp
         src/Workers/FileSystems/FileManager.cpp
         src/Workers/FileSystems/FileManager.h
         src/Workers/FileSystems/FileManager.h
+        src/Workers/FileSystems/FileObject.h
+        src/Workers/Logger.cpp
+        src/Workers/Logger.h
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

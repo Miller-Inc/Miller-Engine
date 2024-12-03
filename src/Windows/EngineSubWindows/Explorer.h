@@ -33,6 +33,7 @@ private:
     bool isOpen = true;
     MillerGui::FileManager* fileManager;
 
+    static void createFileTree(const MillerGui::FileObject& fileLayout);
 
 
     /// @end impl

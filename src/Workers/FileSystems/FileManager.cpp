@@ -9,6 +9,8 @@
 #include "CrossPlatformMacros.h"
 #include <utility>
 
+#include "Workers/Logger.h"
+
 namespace MillerGui {
     FileManager::FileManager(std::filesystem::path path)
     {
@@ -65,16 +67,10 @@ namespace MillerGui {
     /// </summary>
     void FileManager::getFiles()
     {
+        LOG("Starting file manager thread");
         while (running){
-            if (MDEBUG)
-                std::cout << "Getting files in " << path << std::endl;
-            for (const auto & entry : std::filesystem::directory_iterator(path))
-            {
-                files.emplace(entry.path());
-            }
-            if (MDEBUG)
-                std::cout << "Files: " << files.size() << std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            fileLayout = getFileObject(path);
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }
 
@@ -83,6 +79,43 @@ namespace MillerGui {
         return files;
     }
 
+    FileObject FileManager::getFileObject(std::filesystem::path p)
+    {
+        try
+        {
+            FileObject obj;
+
+            obj.name = p.filename();
+            obj.extension = p.extension();
+            obj.path = p;
+            obj.included = true;
+            if (is_directory(p))
+            {
+                obj.type = FileType::Directory;
+
+                for (const auto & entry : std::filesystem::directory_iterator(p))
+                {
+                    obj.children.emplace_back(getFileObject(entry.path()));
+                }
+            }
+            else
+            {
+                obj.type = FileType::File;
+            }
+
+            return obj;
+        }
+        catch (std::exception& exception)
+        {
+            LOG_ERROR("Error: " << exception.what());
+            return {};
+        }
+    }
+
+    FileObject FileManager::GetFileLayout() const
+    {
+        return fileLayout;
+    }
 
 
 
