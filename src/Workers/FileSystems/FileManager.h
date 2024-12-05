@@ -35,6 +35,8 @@ public:
 
     [[nodiscard]] FileObject GetFileLayout() const;
 
+    static bool isExcluded(const std::filesystem::path& path);
+
 private:
 
     std::thread* thread;
@@ -54,6 +56,9 @@ private:
     void getFiles();
 
     static FileObject getFileObject(std::filesystem::path p);
+
+    static bool hasReadPermission(const std::filesystem::path& path);
+
 
 };
 

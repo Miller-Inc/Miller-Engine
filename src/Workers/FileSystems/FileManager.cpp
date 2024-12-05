@@ -21,7 +21,7 @@ namespace MillerGui {
     FileManager::~FileManager()
     {
         End(); // Stop the file manager
-        free(thread); // Free the path
+        // free(thread); // Free the path
         delete thread;
     }
 
@@ -79,35 +79,34 @@ namespace MillerGui {
         return files;
     }
 
-    FileObject FileManager::getFileObject(std::filesystem::path p)
-    {
-        try
-        {
-            FileObject obj;
+    FileObject FileManager::getFileObject(std::filesystem::path p) {
+        try {
+            if (!hasReadPermission(p)) {
+                LOG("No read permission for file: " << p);
+                return {};
+            }
 
+            FileObject obj;
             obj.name = p.filename();
             obj.extension = p.extension();
             obj.path = p;
             obj.included = true;
-            if (is_directory(p))
-            {
-                obj.type = FileType::Directory;
 
-                for (const auto & entry : std::filesystem::directory_iterator(p))
-                {
+            if (is_directory(p)) {
+                obj.type = FileType::Directory;
+                for (const auto& entry : std::filesystem::directory_iterator(p)) {
                     obj.children.emplace_back(getFileObject(entry.path()));
                 }
-            }
-            else
-            {
+            } else {
                 obj.type = FileType::File;
             }
 
             return obj;
-        }
-        catch (std::exception& exception)
-        {
-            LOG_ERROR("Error: " << exception.what());
+        } catch (const std::filesystem::filesystem_error& e) {
+            LOG_ERROR("Filesystem error: " << e.what());
+            return {};
+        } catch (const std::exception& e) {
+            LOG_ERROR("Error: " << e.what());
             return {};
         }
     }
@@ -117,6 +116,75 @@ namespace MillerGui {
         return fileLayout;
     }
 
+    bool FileManager::hasReadPermission(const std::filesystem::path& path) {
+        std::filesystem::perms permissions = std::filesystem::status(path).permissions();
+        return (permissions & std::filesystem::perms::owner_read) != std::filesystem::perms::none ||
+               (permissions & std::filesystem::perms::group_read) != std::filesystem::perms::none ||
+               (permissions & std::filesystem::perms::others_read) != std::filesystem::perms::none;
+    }
+
+    bool FileManager::isExcluded(const std::filesystem::path& path)
+    {
+        if (path.filename() == ".git")
+            return true;
+        if (path.filename() == ".vscode")
+            return true;
+        if (path.filename() == "System Volume Information")
+        {
+            return true;
+        }
+        if (path.filename() == "$RECYCLE.BIN")
+        {
+            return true;
+        }
+        if (path.filename() == "AppData")
+        {
+            return true;
+        }
+        if (path.filename() == "Windows")
+        {
+            return true;
+        }
+        if (path.filename() == "Program Files")
+        {
+            return true;
+        }
+        if (path.filename() == "Program Files (x86)")
+        {
+            return true;
+        }
+        if (path.filename() == "ProgramData")
+        {
+            return true;
+        }
+        if (path.filename() == "Windows.old")
+        {
+            return true;
+        }
+        if (path.filename() == "Users")
+        {
+            return true;
+        }
+        if (path.filename() == "Recovery")
+        {
+            return true;
+        }
+        if (path.filename() == "PerfLogs")
+        {
+            return true;
+        }
+        if (path.filename() == "OneDrive")
+        {
+            return true;
+        }
+        if (path.filename() == "Intel")
+        {
+            return true;
+        }
+
+
+        return false;
+    }
 
 
 } // MillerGui

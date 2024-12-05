@@ -5,6 +5,7 @@
 #include "Explorer.h"
 #include <imgui.h>
 #include <iostream>
+#include <csignal>
 
 Explorer::Explorer()
 {
@@ -38,12 +39,17 @@ void Explorer::Draw()
         ImGui::Text("Search");
         ImGui::SameLine(0, 1 * ImGui::GetStyle().ItemSpacing.x);
         ImGui::SetNextItemWidth(500);
-
-
         char inputText[4096] = "";
         ImGui::InputText("###ExplorerTextInput", inputText, IM_ARRAYSIZE(inputText));
 
         input = new std::string(inputText);
+
+        // ImGui::SameLine( 10, 1 * ImGui::GetStyle().ItemSpacing.x);
+        ImGui::Button("Go to Path###ExplorerGoToPath", { 100, 20});
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Go to path");
+        if (ImGui::IsItemClicked())
+            OpenPath(*input);
 
         if (ImGui::IsItemActive())
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
@@ -69,6 +75,8 @@ void Explorer::createFileTree(const MillerGui::FileObject& fileHead)
 {
     for (auto & file : fileHead.children)
     {
+        if (MillerGui::FileManager::isExcluded(file.path))
+            continue;
         if (file.type == MillerGui::FileType::File)
         {
             if (ImGui::TreeNodeEx(file.name.string().c_str(), ImGuiTreeNodeFlags_Leaf))
@@ -78,10 +86,23 @@ void Explorer::createFileTree(const MillerGui::FileObject& fileHead)
         {
             if (ImGui::TreeNodeEx(file.name.string().c_str(), ImGuiTreeNodeFlags_None))
             {
-                createFileTree(file);
+                if (file.name != "." && file.name != "..")
+                {
+                    createFileTree(file);
+                }
                 ImGui::TreePop();
             }
         }
     }
+}
+
+void Explorer::OpenPath(const std::string& path) const
+{
+    if (path.empty())
+        return;
+    if (path == ".")
+        return;
+    fileManager->SetPath(path);
+    fileManager->Restart();
 }
     /// @end TopWindow

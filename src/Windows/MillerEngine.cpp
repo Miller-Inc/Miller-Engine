@@ -32,6 +32,7 @@ void MillerEngine::runEngine()
     inspectorWindow();
     sceneWindow();
     explorerWindow();
+    millerIncLander->Draw();
 }
 
 void MillerEngine::stopEngine()
@@ -74,6 +75,5 @@ void MillerEngine::sceneWindow()
 void MillerEngine::explorerWindow()
 {
     explorer->Draw();
-    millerIncLander->Draw();
 }
 

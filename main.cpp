@@ -1,5 +1,8 @@
+#include <iostream>
+
 #include "CrossPlatformMacros.h"
 #include "src/Windows/MillerEngine.h"
+#include "csignal"
 
 // Include the correct backend
 #ifdef DX12
@@ -15,13 +18,15 @@
     #define StartWindow WinOpenGL::startWindow
 #endif
 
-
+void signalHandler(int signum)
+{
+    std::cout << "Interrupt signal (" << signum << ") received.\n";
+    exit(signum);
+}
 
 
 int main()
 {
-
-
     auto engine = MillerEngine(); // Create the engine
 
     // Explorer temp = Explorer();

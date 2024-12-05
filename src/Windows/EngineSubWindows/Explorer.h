@@ -35,6 +35,7 @@ private:
 
     static void createFileTree(const MillerGui::FileObject& fileLayout);
 
+    void OpenPath(const std::string& path) const;
 
     /// @end impl
 };
