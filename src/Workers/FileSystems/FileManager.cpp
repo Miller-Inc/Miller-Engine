@@ -69,7 +69,9 @@ namespace MillerGui {
     {
         LOG("Starting file manager thread");
         while (running){
+            lock = true;
             fileLayout = getFileObject(path);
+            lock = false;
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }
@@ -80,34 +82,47 @@ namespace MillerGui {
     }
 
     FileObject FileManager::getFileObject(std::filesystem::path p) {
+
+        FileObject obj;
+
         try {
             if (!hasReadPermission(p)) {
                 LOG("No read permission for file: " << p);
                 return {};
             }
-
-            FileObject obj;
             obj.name = p.filename();
             obj.extension = p.extension();
             obj.path = p;
             obj.included = true;
+            obj.hasPermission = true;
 
             if (is_directory(p)) {
                 obj.type = FileType::Directory;
-                for (const auto& entry : std::filesystem::directory_iterator(p)) {
-                    obj.children.emplace_back(getFileObject(entry.path()));
+
+                try
+                {
+                    for (const auto& entry : std::filesystem::directory_iterator(p)) {
+                        if (hasReadPermission(entry))
+                        {
+                            obj.children.emplace_back(getFileObject(entry.path()));
+                        }
+                    }
+                } catch (std::filesystem::filesystem_error& e) {
+                    LOG_ERROR("Filesystem error: " << e.what());
                 }
+
             } else {
                 obj.type = FileType::File;
             }
 
+
             return obj;
         } catch (const std::filesystem::filesystem_error& e) {
             LOG_ERROR("Filesystem error: " << e.what());
-            return {};
+            return obj;
         } catch (const std::exception& e) {
             LOG_ERROR("Error: " << e.what());
-            return {};
+            return obj;
         }
     }
 
@@ -117,9 +132,13 @@ namespace MillerGui {
     }
 
     bool FileManager::hasReadPermission(const std::filesystem::path& path) {
+        if (isExcluded(path))
+        {
+            return false;
+        }
         std::filesystem::perms permissions = std::filesystem::status(path).permissions();
-        return (permissions & std::filesystem::perms::owner_read) != std::filesystem::perms::none ||
-               (permissions & std::filesystem::perms::group_read) != std::filesystem::perms::none ||
+        return (permissions & std::filesystem::perms::owner_read) != std::filesystem::perms::none &&
+               (permissions & std::filesystem::perms::group_read) != std::filesystem::perms::none &&
                (permissions & std::filesystem::perms::others_read) != std::filesystem::perms::none;
     }
 
@@ -186,5 +205,8 @@ namespace MillerGui {
         return false;
     }
 
+    bool FileManager::Lock() const {
+        return lock;
+    }
 
 } // MillerGui

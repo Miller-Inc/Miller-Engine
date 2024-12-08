@@ -37,6 +37,10 @@ public:
 
     static bool isExcluded(const std::filesystem::path& path);
 
+    static bool hasReadPermission(const std::filesystem::path& path);
+
+    bool Lock() const;
+
 private:
 
     std::thread* thread;
@@ -57,8 +61,7 @@ private:
 
     static FileObject getFileObject(std::filesystem::path p);
 
-    static bool hasReadPermission(const std::filesystem::path& path);
-
+    bool lock = false;
 
 };
 

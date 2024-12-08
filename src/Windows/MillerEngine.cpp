@@ -11,18 +11,23 @@
 
 #include "PracticeWindow.h"
 #include "src/Windows/Capabilities.h"
+#include "Workers/Logger.h"
 
-void MillerEngine::startEngine()
+void MillerEngine::startEngine(std::string path)
 {
+    MillerEngine::path = path;
+    explorer = new Explorer(path);
+
+    // Start the engine
     explorer->Open();
-    millerIncLander->Open();
+    // millerIncLander->Open();
 }
 
 
 void MillerEngine::runEngine()
 {
     // Start the engine
-    MillerIncGui::Capabilities::AddDockSpace();
+    MillerIncGui::Capabilities::AddDockSpaceMenuBar();
 
     // explorer->Draw();
 
@@ -32,7 +37,7 @@ void MillerEngine::runEngine()
     inspectorWindow();
     sceneWindow();
     explorerWindow();
-    millerIncLander->Draw();
+    // millerIncLander->Draw();
 }
 
 void MillerEngine::stopEngine()
@@ -75,5 +80,88 @@ void MillerEngine::sceneWindow()
 void MillerEngine::explorerWindow()
 {
     explorer->Draw();
+}
+
+std::vector<std::string>* MillerEngine::argumentParser(int argc, char* argv[])
+{
+    auto* arguments = new std::vector<std::string>();
+    if (argv == nullptr)
+    {
+        return arguments;
+    }
+
+    for (int i = 0; i < argc; i++)
+    {
+
+        // std::cout << argv[i] << std::endl;
+        // arguments.push_back(argv[i]);
+    }
+
+    std::string argument;
+
+    for (int i = 0; i < argc; i++)
+    {
+        std::cout << argv[i] << std::endl;
+
+        if (*argv[i] == ' ' && !argument.empty())
+        {
+            arguments->push_back(argument); // Add the argument to the list
+            argument = ""; // Reset the argument
+        }
+        else
+        {
+            argument += argv[i]; // Add the argument to the string
+        }
+    }
+    return arguments;
+}
+
+enum class ArgumentType
+{
+    Unknown = -1,
+    FileName = 0,
+    Backend = 1,
+
+};
+
+std::string MillerEngine::setup(int argc, char* argv[])
+{
+    LOG("Miller Engine Started");
+    LOG("All Rights Reserved");
+    LOG("James Miller 2024");
+    LOG("Version 0.0.1");
+
+    auto argumentType = ArgumentType::Unknown;
+    std::string fileName = "";
+
+    if (argc > 1)
+    {
+        for (int i = 1; i < argc; i++) // Start from 1 to skip the program name
+        {
+            if (std::string(argv[i]) == "-f")
+            {
+                argumentType = ArgumentType::FileName;
+            }
+            else if (std::string(argv[i]) == "-b")
+            {
+                argumentType = ArgumentType::Backend;
+            }
+            else
+            {
+                if (argumentType == ArgumentType::FileName)
+                {
+                    LOG("Setting Filepath to: " << argv[i]);
+                    fileName = argv[i];
+                }
+                else if (argumentType == ArgumentType::Backend)
+                {
+                    LOG("Backend Requested: " << argv[i]);
+                }
+                argumentType = ArgumentType::Unknown;
+            }
+        }
+    }
+
+    return fileName;
 }
 

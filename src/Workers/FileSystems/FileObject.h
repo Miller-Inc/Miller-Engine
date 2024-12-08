@@ -18,12 +18,12 @@ namespace MillerGui
 
     struct FileObject
     {
-        std::filesystem::path name;
-        std::filesystem::path path;
-        std::filesystem::path extension;
-        // uint64_t size;
-        MillerGui::FileType type;
-        std::vector<FileObject> children;
-        bool included;
+        std::filesystem::path name = "";
+        std::filesystem::path path = "";
+        std::filesystem::path extension = "";
+        MillerGui::FileType type = MillerGui::FileType::Unknown;
+        std::vector<FileObject> children = {};
+        bool included = false;
+        bool hasPermission = true;
     };
 } // MillerGui

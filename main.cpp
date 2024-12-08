@@ -3,6 +3,7 @@
 #include "CrossPlatformMacros.h"
 #include "src/Windows/MillerEngine.h"
 #include "csignal"
+#include "Workers/Logger.h"
 
 // Include the correct backend
 #ifdef DX12
@@ -24,19 +25,20 @@ void signalHandler(int signum)
     exit(signum);
 }
 
-
-int main()
+int main(int argc, char* argv[])
 {
+    std::string fileName = MillerEngine::setup(argc, argv);
+
+    if (fileName.empty())
+    {
+        fileName = std::filesystem::current_path().string();
+    }
+
     auto engine = MillerEngine(); // Create the engine
 
     // Explorer temp = Explorer();
-    engine.startEngine(); // Start the engine
+    engine.startEngine(fileName); // Start the engine
 
     StartWindow("Miller Engine");
     return 0;
-}
-
-static void loop()
-{
-
 }
